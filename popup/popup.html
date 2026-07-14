@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,16 +11,16 @@
       <img src="../icons/icon.svg" width="36" height="36" alt="">
       <div>
         <h1>ResumeTube</h1>
-        <p>Transcripción lista para tu IA</p>
+        <p data-i18n="headerSubtitle">Transcript ready for your AI</p>
       </div>
     </header>
 
     <main>
       <section class="card controls" aria-labelledby="configuration-title">
-        <h2 id="configuration-title">Configuración</h2>
+        <h2 id="configuration-title" data-i18n="configurationTitle">Settings</h2>
 
         <label>
-          Abrir en
+          <span data-i18n="openInLabel">Open in</span>
           <select id="provider">
             <option value="chatgpt">ChatGPT</option>
             <option value="claude">Claude</option>
@@ -31,41 +31,73 @@
 
         <div class="two-columns">
           <label>
-            Idioma
+            <span data-i18n="summaryLanguageLabel">Summary language</span>
             <select id="language">
-              <option value="es">Español</option>
-              <option value="en">Inglés</option>
-              <option value="source">Idioma original</option>
+              <optgroup label="Automatic" data-i18n-label="languageAutomaticGroup">
+                <option value="source" data-i18n="languageOriginal">Same language as the transcript</option>
+              </optgroup>
+              <optgroup label="Languages" data-i18n-label="languageListGroup">
+                <option value="en" data-i18n="languageEnglish">English</option>
+                <option value="zh" data-i18n="languageChinese">Simplified Mandarin Chinese</option>
+                <option value="hi" data-i18n="languageHindi">Hindi</option>
+                <option value="es" data-i18n="languageSpanish">Spanish</option>
+                <option value="ar" data-i18n="languageArabic">Modern Standard Arabic</option>
+                <option value="fr" data-i18n="languageFrench">French</option>
+                <option value="bn" data-i18n="languageBengali">Bengali</option>
+                <option value="pt" data-i18n="languagePortuguese">Portuguese</option>
+                <option value="id" data-i18n="languageIndonesian">Indonesian</option>
+                <option value="ur" data-i18n="languageUrdu">Urdu</option>
+                <option value="ru" data-i18n="languageRussian">Russian</option>
+                <option value="de" data-i18n="languageGerman">German</option>
+                <option value="ja" data-i18n="languageJapanese">Japanese</option>
+                <option value="vi" data-i18n="languageVietnamese">Vietnamese</option>
+                <option value="sw" data-i18n="languageSwahili">Swahili</option>
+                <option value="tr" data-i18n="languageTurkish">Turkish</option>
+                <option value="ha" data-i18n="languageHausa">Hausa</option>
+                <option value="fil" data-i18n="languageFilipino">Filipino (Tagalog)</option>
+                <option value="fa" data-i18n="languagePersian">Persian</option>
+                <option value="ko" data-i18n="languageKorean">Korean</option>
+                <option value="th" data-i18n="languageThai">Thai</option>
+                <option value="it" data-i18n="languageItalian">Italian</option>
+                <option value="am" data-i18n="languageAmharic">Amharic</option>
+                <option value="my" data-i18n="languageBurmese">Burmese</option>
+                <option value="pl" data-i18n="languagePolish">Polish</option>
+                <option value="ln" data-i18n="languageLingala">Lingala</option>
+                <option value="uk" data-i18n="languageUkrainian">Ukrainian</option>
+                <option value="ms" data-i18n="languageMalay">Malay</option>
+                <option value="nl" data-i18n="languageDutch">Dutch</option>
+                <option value="ro" data-i18n="languageRomanian">Romanian</option>
+              </optgroup>
             </select>
           </label>
 
           <label>
-            Detalle
+            <span data-i18n="detailLabel">Detail</span>
             <select id="detail">
-              <option value="brief">Breve</option>
-              <option value="medium">Medio</option>
-              <option value="detailed">Detallado</option>
+              <option value="brief" data-i18n="detailBrief">Brief</option>
+              <option value="medium" data-i18n="detailMedium">Medium</option>
+              <option value="detailed" data-i18n="detailDetailed">Detailed</option>
             </select>
           </label>
         </div>
 
         <label>
-          Formato
+          <span data-i18n="formatLabel">Format</span>
           <select id="format">
-            <option value="summary">Resumen y puntos clave</option>
-            <option value="study">Apuntes de estudio</option>
-            <option value="chapters">Capítulos con timestamps</option>
+            <option value="summary" data-i18n="formatSummary">Summary and key points</option>
+            <option value="study" data-i18n="formatStudy">Study notes</option>
+            <option value="chapters" data-i18n="formatChapters">Chapters with timestamps</option>
           </select>
         </label>
 
         <label class="checkbox-row">
           <input id="timestamps" type="checkbox" checked>
-          Conservar marcas de tiempo
+          <span data-i18n="keepTimestamps">Keep timestamps</span>
         </label>
       </section>
 
       <section id="status" class="status" role="status" aria-live="polite">
-        Abre un vídeo de YouTube para comenzar.
+        <span data-i18n="initialStatus">Open a YouTube video to get started.</span>
       </section>
 
       <section id="transcript-info" class="card transcript-info" hidden>
@@ -74,32 +106,33 @@
       </section>
 
       <section id="manual-section" class="card manual" hidden>
-        <label for="manual-transcript">Pega aquí la transcripción</label>
+        <label for="manual-transcript" data-i18n="manualTranscriptLabel">Paste the transcript here</label>
         <textarea
           id="manual-transcript"
           rows="7"
-          placeholder="Pega la transcripción que aparece en YouTube…"
+          placeholder="Paste the transcript shown on YouTube…"
+          data-i18n-placeholder="manualTranscriptPlaceholder"
         ></textarea>
-        <button id="use-manual" class="button secondary" type="button">
-          Usar este texto
+        <button id="use-manual" class="button secondary" type="button" data-i18n="useManualText">
+          Use this text
         </button>
       </section>
 
       <div class="actions">
-        <button id="extract" class="button secondary" type="button">
-          Obtener transcripción
+        <button id="extract" class="button secondary" type="button" data-i18n="extractTranscript">
+          Get transcript
         </button>
-        <button id="copy-open" class="button primary" type="button">
-          Copiar y abrir chat
+        <button id="copy-open" class="button primary" type="button" data-i18n="copyAndOpenChat">
+          Copy and open chat
         </button>
       </div>
 
       <div class="footer-actions">
-        <button id="toggle-manual" class="link-button" type="button">
-          Pegar transcripción manualmente
+        <button id="toggle-manual" class="link-button" type="button" data-i18n="pasteManually">
+          Paste transcript manually
         </button>
-        <button id="copy-only" class="link-button" type="button" disabled>
-          Copiar sin abrir
+        <button id="copy-only" class="link-button" type="button" disabled data-i18n="copyWithoutOpening">
+          Copy without opening
         </button>
       </div>
     </main>

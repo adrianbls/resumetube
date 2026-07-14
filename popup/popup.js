@@ -1,9 +1,12 @@
 import { buildPrompt, CHAT_PROVIDERS, estimateTokens } from './prompt.js';
+import { localizeDocument, t, UI_LOCALE } from './i18n.js';
 
 const api = globalThis.browser;
+localizeDocument();
+
 const DEFAULT_SETTINGS = {
   provider: 'chatgpt',
-  language: 'es',
+  language: UI_LOCALE,
   detail: 'medium',
   format: 'summary',
   includeTimestamps: true
@@ -72,7 +75,7 @@ async function restoreSettings() {
 async function getActiveYouTubeTab() {
   const [tab] = await api.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id || !tab.url?.startsWith('https://www.youtube.com/')) {
-    throw new Error('La pestaña activa no es una página de YouTube.');
+    throw new Error(t('activeTabNotYoutube'));
   }
   return tab;
 }
@@ -107,14 +110,16 @@ function refreshTranscriptInfo() {
   const tokens = estimateTokens(prompt);
 
   elements.videoTitle.textContent = transcript.title;
-  elements.transcriptStats.textContent =
-    `${words.toLocaleString('es-ES')} palabras · ~${tokens.toLocaleString('es-ES')} tokens en el prompt`;
+  elements.transcriptStats.textContent = t('transcriptStats', [
+    words.toLocaleString(UI_LOCALE),
+    tokens.toLocaleString(UI_LOCALE)
+  ]);
   elements.transcriptInfo.hidden = false;
   elements.copyOnly.disabled = false;
 
   if (tokens > 30_000) {
     setStatus(
-      'La transcripción es muy larga; el chat elegido podría rechazarla o recortarla.',
+      t('longTranscriptWarning'),
       'warning'
     );
   }
@@ -122,26 +127,26 @@ function refreshTranscriptInfo() {
 
 async function extractTranscript() {
   setBusy(true);
-  setStatus('Buscando la transcripción en YouTube…', 'loading');
+  setStatus(t('searchingTranscript'), 'loading');
 
   try {
     const tab = await getActiveYouTubeTab();
     const response = await requestTranscript(tab);
     if (!response?.ok) {
-      throw new Error(response?.error || 'No se pudo obtener la transcripción.');
+      throw new Error(response?.error || t('unableToGetTranscript'));
     }
 
     transcript = response.data;
     refreshTranscriptInfo();
-    setStatus('Transcripción obtenida correctamente.', 'success');
+    setStatus(t('transcriptReady'), 'success');
     return transcript;
   } catch (error) {
     transcript = null;
     refreshTranscriptInfo();
     elements.manualSection.hidden = false;
-    elements.toggleManual.textContent = 'Ocultar pegado manual';
+    elements.toggleManual.textContent = t('hideManual');
     setStatus(
-      `${error instanceof Error ? error.message : String(error)} Puedes pegarla manualmente.`,
+      `${error instanceof Error ? error.message : String(error)} ${t('manualFallbackSuffix')}`,
       'error'
     );
     return null;
@@ -153,17 +158,17 @@ async function extractTranscript() {
 function useManualTranscript() {
   const text = elements.manualTranscript.value.trim();
   if (!text) {
-    setStatus('Pega algún texto antes de continuar.', 'error');
+    setStatus(t('manualTextRequired'), 'error');
     return;
   }
 
   transcript = {
-    title: 'Transcripción introducida manualmente',
+    title: t('manualTranscriptTitle'),
     url: '',
     segments: [{ timestamp: '', text }]
   };
   refreshTranscriptInfo();
-  setStatus('Transcripción manual preparada.', 'success');
+  setStatus(t('manualTranscriptReady'), 'success');
 }
 
 async function writeToClipboard(text) {
@@ -178,7 +183,7 @@ async function writeToClipboard(text) {
     textarea.select();
     const copied = document.execCommand('copy');
     textarea.remove();
-    if (!copied) throw new Error('Firefox no permitió copiar el texto.');
+    if (!copied) throw new Error(t('clipboardDenied'));
   }
 }
 
@@ -198,9 +203,9 @@ async function copyPrompt({ openChat }) {
     if (openChat) {
       const provider = CHAT_PROVIDERS[settings.provider] || CHAT_PROVIDERS.chatgpt;
       await api.tabs.create({ url: provider.url });
-      setStatus(`Prompt copiado. Pégalo en ${provider.label} con Ctrl+V.`, 'success');
+      setStatus(t('promptCopiedOpen', provider.label), 'success');
     } else {
-      setStatus('Prompt copiado al portapapeles.', 'success');
+      setStatus(t('promptCopied'), 'success');
     }
   } catch (error) {
     setStatus(error instanceof Error ? error.message : String(error), 'error');
@@ -212,8 +217,8 @@ async function copyPrompt({ openChat }) {
 function toggleManualSection() {
   elements.manualSection.hidden = !elements.manualSection.hidden;
   elements.toggleManual.textContent = elements.manualSection.hidden
-    ? 'Pegar transcripción manualmente'
-    : 'Ocultar pegado manual';
+    ? t('pasteManually')
+    : t('hideManual');
   if (!elements.manualSection.hidden) elements.manualTranscript.focus();
 }
 
