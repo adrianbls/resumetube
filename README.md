@@ -46,6 +46,20 @@ npx web-ext run
 
 Requires Firefox 142 or later (`strict_min_version` in `manifest.json`).
 
+## Try it in Chrome
+
+The same codebase runs on Chrome (Manifest V3). To load it unpacked:
+
+1. Open `chrome://extensions`.
+2. Enable **Developer mode**.
+3. Click **Load unpacked** and select the project folder.
+4. Open a YouTube video with subtitles and use the ResumeTube icon.
+
+Cross-browser support is achieved with a small shim
+(`globalThis.browser ?? globalThis.chrome`) and by replying to messages with
+`sendResponse`. The manifest icons are PNG because Chrome does not support SVG in
+that key.
+
 ## Tests
 
 The tests use Node's built-in runner, with no external dependencies:
@@ -67,7 +81,7 @@ manifest.json
 ├── popup/popup.js             # Main flow and clipboard
 ├── popup/prompt.js            # Prompt templates, languages, and chat targets
 ├── popup/i18n.js              # Popup interface localization
-├── icons/icon.svg
+├── icons/                     # icon.svg (popup) + PNG 16-128 for the manifest
 └── tests/                     # Tests run with node --test
 ```
 

@@ -46,6 +46,21 @@ npx web-ext run
 
 Requiere Firefox 142 o posterior (`strict_min_version` en `manifest.json`).
 
+## Probar en Chrome
+
+La misma base de código funciona en Chrome (Manifest V3). Para cargarla sin
+empaquetar:
+
+1. Abre `chrome://extensions`.
+2. Activa el **Modo de desarrollador**.
+3. Pulsa **Cargar descomprimida** y selecciona la carpeta del proyecto.
+4. Abre un vídeo de YouTube con subtítulos y usa el icono de ResumeTube.
+
+La compatibilidad entre navegadores se logra con un pequeño *shim*
+(`globalThis.browser ?? globalThis.chrome`) y respondiendo a los mensajes con
+`sendResponse`. Los iconos del manifiesto están en PNG porque Chrome no admite
+SVG en esa clave.
+
 ## Pruebas
 
 Las pruebas usan el ejecutor integrado de Node, sin dependencias externas:
@@ -67,7 +82,7 @@ manifest.json
 ├── popup/popup.js             # Flujo principal y portapapeles
 ├── popup/prompt.js            # Plantillas de prompt, idiomas y destinos de chat
 ├── popup/i18n.js              # Localización de la interfaz del popup
-├── icons/icon.svg
+├── icons/                     # icon.svg (popup) + PNG 16-128 para el manifiesto
 └── tests/                     # Pruebas con node --test
 ```
 

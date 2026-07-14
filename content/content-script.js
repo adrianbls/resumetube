@@ -2,6 +2,8 @@
   if (globalThis.__resumeTubeContentScriptLoaded) return;
   globalThis.__resumeTubeContentScriptLoaded = true;
 
+  const api = globalThis.browser ?? globalThis.chrome;
+
   const TRANSCRIPT_PANEL_SELECTORS = [
     'ytd-engagement-panel-section-list-renderer[target-id="PAmodern_transcript_view"]',
     'ytd-engagement-panel-section-list-renderer[target-id*="PAmodern_transcript"]',
@@ -52,7 +54,7 @@
     new Promise((resolve) => setTimeout(resolve, milliseconds));
 
   function t(key) {
-    return browser.i18n.getMessage(key) || key;
+    return api.i18n.getMessage(key) || key;
   }
 
   function getVideoTitle() {
@@ -278,14 +280,19 @@
     });
   }
 
-  browser.runtime.onMessage.addListener((message) => {
-    if (message?.type !== 'RESUMETUBE_EXTRACT_TRANSCRIPT') return undefined;
+  api.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type !== 'RESUMETUBE_EXTRACT_TRANSCRIPT') return false;
 
-    return extractTranscript()
-      .then((data) => ({ ok: true, data }))
-      .catch((error) => ({
-        ok: false,
-        error: error instanceof Error ? error.message : String(error)
-      }));
+    // Chrome ignora la Promise devuelta; hay que usar sendResponse + return true.
+    // Firefox también admite este patrón, así que sirve para ambos navegadores.
+    extractTranscript()
+      .then((data) => sendResponse({ ok: true, data }))
+      .catch((error) =>
+        sendResponse({
+          ok: false,
+          error: error instanceof Error ? error.message : String(error)
+        })
+      );
+    return true;
   });
 })();

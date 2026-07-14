@@ -1,4 +1,4 @@
-const api = globalThis.browser;
+const api = globalThis.browser ?? globalThis.chrome;
 
 export function resolveUiLocale(language) {
   return String(language || '').toLowerCase().startsWith('es') ? 'es' : 'en';

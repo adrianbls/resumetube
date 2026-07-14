@@ -1,7 +1,7 @@
 import { buildPrompt, CHAT_PROVIDERS, estimateTokens } from './prompt.js';
 import { localizeDocument, t, UI_LOCALE } from './i18n.js';
 
-const api = globalThis.browser;
+const api = globalThis.browser ?? globalThis.chrome;
 localizeDocument();
 
 const ADD_PROVIDER_VALUE = '__add_custom__';
