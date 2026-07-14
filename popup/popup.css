@@ -71,6 +71,8 @@ label {
   color: #44474e;
 }
 
+input[type="text"],
+input[type="url"],
 select,
 textarea {
   width: 100%;
@@ -81,6 +83,8 @@ textarea {
   font: inherit;
 }
 
+input[type="text"],
+input[type="url"],
 select {
   height: 34px;
   padding: 0 9px;
@@ -93,11 +97,38 @@ textarea {
   line-height: 1.4;
 }
 
+input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 button:focus-visible {
   outline: 3px solid rgba(226, 30, 62, 0.22);
   outline-offset: 1px;
+}
+
+.custom-provider {
+  display: grid;
+  gap: 8px;
+  padding: 11px;
+  border: 1px dashed #c9cace;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.custom-provider-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #44474e;
+}
+
+.custom-provider-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.remove-provider {
+  justify-self: start;
+  margin-top: -4px;
 }
 
 .two-columns {
@@ -279,11 +310,22 @@ button:focus-visible {
     color: #c8cad0;
   }
 
+  input[type="text"],
+  input[type="url"],
   select,
   textarea {
     border-color: #4a4c53;
     background: #1e1f23;
     color: #f3f3f5;
+  }
+
+  .custom-provider {
+    border-color: #4a4c53;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .custom-provider-title {
+    color: #c8cad0;
   }
 
   .status {

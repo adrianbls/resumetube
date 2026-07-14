@@ -21,13 +21,42 @@
 
         <label>
           <span data-i18n="openInLabel">Open in</span>
-          <select id="provider">
-            <option value="chatgpt">ChatGPT</option>
-            <option value="claude">Claude</option>
-            <option value="aistudio">Google AI Studio</option>
-            <option value="gemini">Gemini</option>
-          </select>
+          <select id="provider"></select>
         </label>
+        <button id="remove-provider" class="link-button remove-provider" type="button" hidden data-i18n="customProviderRemove">
+          Remove this custom chat
+        </button>
+
+        <div id="custom-provider" class="custom-provider" hidden>
+          <span class="custom-provider-title" data-i18n="customProviderTitle">Add custom chat</span>
+          <label>
+            <span data-i18n="customProviderNameLabel">Name</span>
+            <input
+              id="custom-name"
+              type="text"
+              placeholder="Perplexity, DeepSeek…"
+              data-i18n-placeholder="customProviderNamePlaceholder"
+            >
+          </label>
+          <label>
+            <span data-i18n="customProviderUrlLabel">Address (URL)</span>
+            <input
+              id="custom-url"
+              type="url"
+              inputmode="url"
+              placeholder="https://www.perplexity.ai/"
+              data-i18n-placeholder="customProviderUrlPlaceholder"
+            >
+          </label>
+          <div class="custom-provider-actions">
+            <button id="cancel-custom" class="button secondary" type="button" data-i18n="customProviderCancel">
+              Cancel
+            </button>
+            <button id="save-custom" class="button primary" type="button" data-i18n="customProviderSave">
+              Save and use
+            </button>
+          </div>
+        </div>
 
         <div class="two-columns">
           <label>

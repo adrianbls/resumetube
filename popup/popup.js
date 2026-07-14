@@ -4,6 +4,8 @@ import { localizeDocument, t, UI_LOCALE } from './i18n.js';
 const api = globalThis.browser;
 localizeDocument();
 
+const ADD_PROVIDER_VALUE = '__add_custom__';
+
 const DEFAULT_SETTINGS = {
   provider: 'chatgpt',
   language: UI_LOCALE,
@@ -28,11 +30,19 @@ const elements = {
   extract: document.querySelector('#extract'),
   copyOpen: document.querySelector('#copy-open'),
   copyOnly: document.querySelector('#copy-only'),
-  toggleManual: document.querySelector('#toggle-manual')
+  toggleManual: document.querySelector('#toggle-manual'),
+  removeProvider: document.querySelector('#remove-provider'),
+  customProvider: document.querySelector('#custom-provider'),
+  customName: document.querySelector('#custom-name'),
+  customUrl: document.querySelector('#custom-url'),
+  saveCustom: document.querySelector('#save-custom'),
+  cancelCustom: document.querySelector('#cancel-custom')
 };
 
 let transcript = null;
 let busy = false;
+let customProviders = [];
+let lastRealProvider = DEFAULT_SETTINGS.provider;
 
 function setStatus(message, kind = '') {
   elements.status.textContent = message;
@@ -47,9 +57,14 @@ function setBusy(value) {
   elements.useManual.disabled = value;
 }
 
+function currentProvider() {
+  const value = elements.provider.value;
+  return value && value !== ADD_PROVIDER_VALUE ? value : lastRealProvider;
+}
+
 function getSettings() {
   return {
-    provider: elements.provider.value,
+    provider: currentProvider(),
     language: elements.language.value,
     detail: elements.detail.value,
     format: elements.format.value,
@@ -65,11 +80,140 @@ async function saveSettings() {
 async function restoreSettings() {
   const { settings = {} } = await api.storage.local.get('settings');
   const restored = { ...DEFAULT_SETTINGS, ...settings };
-  elements.provider.value = restored.provider;
+  renderProviderOptions(restored.provider);
+  lastRealProvider = elements.provider.value;
   elements.language.value = restored.language;
   elements.detail.value = restored.detail;
   elements.format.value = restored.format;
   elements.timestamps.checked = restored.includeTimestamps;
+}
+
+function getAllProviders() {
+  const providers = { ...CHAT_PROVIDERS };
+  for (const { id, label, url } of customProviders) {
+    providers[id] = { label, url };
+  }
+  return providers;
+}
+
+function isCustomProvider(id) {
+  return customProviders.some((provider) => provider.id === id);
+}
+
+function updateRemoveButton() {
+  elements.removeProvider.hidden = !isCustomProvider(elements.provider.value);
+}
+
+function renderProviderOptions(selected = elements.provider.value) {
+  elements.provider.textContent = '';
+
+  for (const [id, { label }] of Object.entries(CHAT_PROVIDERS)) {
+    elements.provider.append(new Option(label, id));
+  }
+
+  if (customProviders.length) {
+    const group = document.createElement('optgroup');
+    group.label = t('providerCustomGroup');
+    for (const { id, label } of customProviders) {
+      group.append(new Option(label, id));
+    }
+    elements.provider.append(group);
+  }
+
+  elements.provider.append(new Option(t('providerAddCustom'), ADD_PROVIDER_VALUE));
+
+  const canSelect = [...elements.provider.options].some(
+    (option) => option.value === selected
+  );
+  elements.provider.value = canSelect ? selected : DEFAULT_SETTINGS.provider;
+  updateRemoveButton();
+}
+
+async function loadCustomProviders() {
+  const { customProviders: stored = [] } =
+    await api.storage.local.get('customProviders');
+  customProviders = Array.isArray(stored) ? stored : [];
+}
+
+function normalizeProviderUrl(rawValue) {
+  const candidates = /^https?:\/\//i.test(rawValue) ? [rawValue] : [`https://${rawValue}`];
+  for (const candidate of candidates) {
+    try {
+      const url = new URL(candidate);
+      if (url.protocol === 'http:' || url.protocol === 'https:') return url.href;
+    } catch {
+      // Ignore invalid candidates and fall through to returning null.
+    }
+  }
+  return null;
+}
+
+function newProviderId() {
+  const random = globalThis.crypto?.randomUUID?.();
+  return `custom-${random || `${Date.now()}-${customProviders.length}`}`;
+}
+
+function openCustomProviderForm() {
+  elements.customName.value = '';
+  elements.customUrl.value = '';
+  elements.customProvider.hidden = false;
+  elements.removeProvider.hidden = true;
+  elements.customName.focus();
+}
+
+function closeCustomProviderForm() {
+  elements.customProvider.hidden = true;
+  elements.provider.value = lastRealProvider;
+  updateRemoveButton();
+}
+
+async function saveCustomProvider() {
+  const label = elements.customName.value.trim();
+  if (!label) {
+    setStatus(t('customProviderNameRequired'), 'error');
+    elements.customName.focus();
+    return;
+  }
+
+  const url = normalizeProviderUrl(elements.customUrl.value.trim());
+  if (!url) {
+    setStatus(t('customProviderUrlInvalid'), 'error');
+    elements.customUrl.focus();
+    return;
+  }
+
+  const provider = { id: newProviderId(), label, url };
+  customProviders.push(provider);
+  await api.storage.local.set({ customProviders });
+
+  renderProviderOptions(provider.id);
+  lastRealProvider = provider.id;
+  elements.customProvider.hidden = true;
+  await saveSettings();
+  setStatus(t('customProviderSaved', label), 'success');
+}
+
+async function removeCustomProvider() {
+  const id = elements.provider.value;
+  if (!isCustomProvider(id)) return;
+
+  customProviders = customProviders.filter((provider) => provider.id !== id);
+  await api.storage.local.set({ customProviders });
+
+  renderProviderOptions(DEFAULT_SETTINGS.provider);
+  lastRealProvider = elements.provider.value;
+  await saveSettings();
+  setStatus(t('customProviderRemoved'), 'success');
+}
+
+function onProviderChange() {
+  if (elements.provider.value === ADD_PROVIDER_VALUE) {
+    openCustomProviderForm();
+    return;
+  }
+  lastRealProvider = elements.provider.value;
+  updateRemoveButton();
+  saveSettings();
 }
 
 async function getActiveYouTubeTab() {
@@ -201,7 +345,7 @@ async function copyPrompt({ openChat }) {
     await writeToClipboard(prompt);
 
     if (openChat) {
-      const provider = CHAT_PROVIDERS[settings.provider] || CHAT_PROVIDERS.chatgpt;
+      const provider = getAllProviders()[settings.provider] || CHAT_PROVIDERS.chatgpt;
       await api.tabs.create({ url: provider.url });
       setStatus(t('promptCopiedOpen', provider.label), 'success');
     } else {
@@ -223,7 +367,6 @@ function toggleManualSection() {
 }
 
 for (const element of [
-  elements.provider,
   elements.language,
   elements.detail,
   elements.format,
@@ -232,10 +375,15 @@ for (const element of [
   element.addEventListener('change', saveSettings);
 }
 
+elements.provider.addEventListener('change', onProviderChange);
+elements.removeProvider.addEventListener('click', removeCustomProvider);
+elements.saveCustom.addEventListener('click', saveCustomProvider);
+elements.cancelCustom.addEventListener('click', closeCustomProviderForm);
 elements.extract.addEventListener('click', extractTranscript);
 elements.copyOpen.addEventListener('click', () => copyPrompt({ openChat: true }));
 elements.copyOnly.addEventListener('click', () => copyPrompt({ openChat: false }));
 elements.toggleManual.addEventListener('click', toggleManualSection);
 elements.useManual.addEventListener('click', useManualTranscript);
 
+await loadCustomProviders();
 await restoreSettings();

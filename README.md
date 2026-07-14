@@ -14,6 +14,8 @@ backend, API keys, or proprietary services.
   the transcript".
 - Manual pasting when the video offers no transcript or the interface changes.
 - Targets: ChatGPT, Claude, Google AI Studio, and Gemini.
+- Add your own chats (Perplexity, DeepSeek, etc.) by entering a name and URL;
+  they are saved and the latest one becomes the default.
 - Brief, medium, or detailed summaries.
 - General summary, study notes, and chapters formats.
 - Optional timestamp preservation.

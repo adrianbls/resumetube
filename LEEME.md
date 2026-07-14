@@ -14,6 +14,8 @@ por el usuario. No utiliza backend, claves API ni servicios propios.
   que la transcripción».
 - Pegado manual cuando el vídeo no ofrece transcripción o cambia la interfaz.
 - Destinos: ChatGPT, Claude, Google AI Studio y Gemini.
+- Añadir chats propios (Perplexity, DeepSeek, etc.) indicando nombre y URL; se
+  guardan y el último queda como predeterminado.
 - Resumen breve, medio o detallado.
 - Formatos de resumen general, apuntes de estudio y capítulos.
 - Conservación opcional de timestamps.
